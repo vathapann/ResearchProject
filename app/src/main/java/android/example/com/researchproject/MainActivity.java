@@ -1,6 +1,8 @@
 package android.example.com.researchproject;
 
 import android.content.Intent;
+import android.example.com.researchproject.ui.dashboard.DashboardFragment;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -11,6 +13,7 @@ import android.widget.ImageView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.navigation.NavController;
@@ -84,5 +87,25 @@ public class MainActivity extends AppCompatActivity {
         Log.i("Image File: ", imageFile.toString());
 
         return imageFile;
+    }
+
+    /*
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == IMAGE_REQUEST && resultCode == RESULT_OK){
+            Bundle extras = data.getExtras();
+
+            Bitmap bitmap = (Bitmap) extras.get("data");
+            mImageView.setImageBitmap(bitmap);
+
+        }
+    }
+
+     */
+    public void DisplayImage(View view){
+        Intent intent = new Intent(this, DisplayImage.class);
+    intent.putExtra("image_paths",currentImagePath);
+    startActivity(intent);
     }
 }

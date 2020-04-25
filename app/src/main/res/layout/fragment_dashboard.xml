@@ -40,12 +40,13 @@
         />
 
     <Button
-        android:id="@+id/uploadButton"
+        android:id="@+id/viewPicture"
         android:layout_width="wrap_content"
-        android:text="Update Picture"
+        android:text="viewPicture"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_gravity="center_horizontal"
+        android:onClick="DisplayImage"
 
         />
 
