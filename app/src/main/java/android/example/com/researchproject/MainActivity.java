@@ -1,6 +1,8 @@
 package android.example.com.researchproject;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,15 +21,19 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private ImageView mImageView;
-    private static final int IMAGE_REQUEST = 1;
+    private static final int IMAGE_REQUEST = 1; // for camera intent
+    private static final int PICK_IMAGE_REQUEST = 2; // for select picture from gallery
     String currentImagePath = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,23 +106,78 @@ public class MainActivity extends AppCompatActivity {
         return imageFile;
     }
 
-    /*
+// This method calls the method recognizeImage to analyze the picture. The results are stored in a list.
+
+   /*
+    public List<Classifier.Recognition> analyse(Bitmap bitmap) {
+        bitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false);
+        final List<Classifier.Recognition> results = classifier.recognizeImage(bitmap);
+        return results;
+    }
+
+    */
+
+
+    public void selectPicture(View view) {
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, PICK_IMAGE_REQUEST);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        // If the result of camera
         if(requestCode == IMAGE_REQUEST && resultCode == RESULT_OK){
-            Bundle extras = data.getExtras();
 
-            Bitmap bitmap = (Bitmap) extras.get("data");
-            mImageView.setImageBitmap(bitmap);
+            //Bundle extras = data.getExtras();
+           // Bitmap bitmap = (Bitmap) extras.get("data");
+           // mImageView.setImageBitmap(bitmap);
 
+            ImageView imageView = findViewById(R.id.imageView);
+            Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
+
+            imageView.setImageBitmap(bitmap);
+            imageView.animate().rotation(90).setDuration(1);
+
+
+        }
+        // if the result of image picker
+        else if (resultCode == RESULT_OK && requestCode == PICK_IMAGE_REQUEST ) {
+            try
+            {
+                final Uri imageUri = data.getData();
+                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+              //  List<Classifier.Recognition> results = analyse(selectedImage);
+               // TV1.setText(results.get(0).toString());
+               // setPicture(selectedImage);
+
+                ImageView imageView = findViewById(R.id.imageView);
+                //Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
+
+                imageView.setImageBitmap(selectedImage);
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-     */
+    
+    //----- No need to use viewPicture activity to display image
+/*
     public void DisplayImage(View view){
         Intent intent = new Intent(this, DisplayImage.class);
     intent.putExtra("image_paths",currentImagePath);
     startActivity(intent);
+    }
+    */
+
+
+
+// function to upload the image from camera or from image picker to the server
+    public void uploadPicture(View view) {
+        Log.i("uploadImage button: ", "Clicked");
     }
 }
