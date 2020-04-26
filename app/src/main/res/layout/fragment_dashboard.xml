@@ -42,7 +42,7 @@
     <Button
         android:id="@+id/viewPicture"
         android:layout_width="wrap_content"
-        android:text="viewPicture"
+        android:text="View Picture"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_gravity="center_horizontal"

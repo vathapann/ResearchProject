@@ -1,8 +1,6 @@
 package android.example.com.researchproject;
 
 import android.content.Intent;
-import android.example.com.researchproject.ui.dashboard.DashboardFragment;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,7 +11,6 @@ import android.widget.ImageView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.navigation.NavController;
@@ -40,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+                R.id.navigation_home, R.id.navigation_camera, R.id.navigation_setting)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
@@ -80,11 +77,25 @@ public class MainActivity extends AppCompatActivity {
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         Log.i("storageDir", storageDir.toString());
 
+        // new method
+/*
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        Log.i("Testting!!!!! 11" ,mediaStorageDir.toString() );
+        File imageFile = new File(mediaStorageDir.getPath() + File.separator +
+                "IMG_"+ timeStamp + ".jpg");
+        currentImagePath = imageFile.getAbsolutePath();
+        //
+*/
+
+
         //create image file
         File imageFile = File.createTempFile(imageName,".jpg",storageDir);
         currentImagePath =  imageFile.getAbsolutePath();
         Log.i("currentImagePath", currentImagePath.toString());
         Log.i("Image File: ", imageFile.toString());
+        Log.i("Testting!!!!!" , Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES).toString());
 
         return imageFile;
     }

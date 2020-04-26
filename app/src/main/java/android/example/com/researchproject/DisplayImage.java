@@ -16,5 +16,6 @@ ImageView imageView;
         imageView = findViewById(R.id.imageView3);
         Bitmap bitmap = BitmapFactory.decodeFile(getIntent().getStringExtra("image_paths"));
         imageView.setImageBitmap(bitmap);
+        imageView.animate().rotation(90).setDuration(1);
     }
 }
