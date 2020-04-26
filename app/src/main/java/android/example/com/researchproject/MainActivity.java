@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
 
             imageView.setImageBitmap(bitmap);
-            imageView.animate().rotation(90).setDuration(1);
+            //imageView.animate().rotation(90).setDuration(1);
 
 
         }
@@ -157,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
                 //Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
 
                 imageView.setImageBitmap(selectedImage);
+               // imageView.animate().rotation(90).setDuration(1);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -164,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    
+
     //----- No need to use viewPicture activity to display image
 /*
     public void DisplayImage(View view){
