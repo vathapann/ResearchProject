@@ -11,9 +11,16 @@
         android:icon="@android:drawable/ic_menu_camera"
         android:title="@string/title_camera" />
 
+
+    <item
+        android:id="@+id/navigation_map"
+        android:icon="@android:drawable/ic_dialog_map"
+        android:title="@string/title_map" />
     <item
         android:id="@+id/navigation_setting"
         android:icon="@android:drawable/ic_menu_manage"
         android:title="@string/title_setting" />
+
+
 
 </menu>

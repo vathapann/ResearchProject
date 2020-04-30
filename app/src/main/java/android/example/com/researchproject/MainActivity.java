@@ -43,13 +43,55 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_camera, R.id.navigation_setting)
+                R.id.navigation_home, R.id.navigation_camera, R.id.navigation_setting,  R.id.navigation_map)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // If the result of camera
+        if(requestCode == IMAGE_REQUEST && resultCode == RESULT_OK){
+
+            //Bundle extras = data.getExtras();
+            // Bitmap bitmap = (Bitmap) extras.get("data");
+            // mImageView.setImageBitmap(bitmap);
+
+            ImageView imageView = findViewById(R.id.imageView);
+            Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
+
+            imageView.setImageBitmap(bitmap);
+            //imageView.animate().rotation(90).setDuration(1);
+            //   galleryAddPic(); // add picture that was taken to be available to the gallery app
+
+
+        }
+        // if the result of image picker
+        else if (resultCode == RESULT_OK && requestCode == PICK_IMAGE_REQUEST ) {
+            try
+            {
+                final Uri imageUri = data.getData();
+                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                //  List<Classifier.Recognition> results = analyse(selectedImage);
+                // TV1.setText(results.get(0).toString());
+                // setPicture(selectedImage);
+
+                ImageView imageView = findViewById(R.id.imageView);
+                //Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
+
+                imageView.setImageBitmap(selectedImage);
+                // imageView.animate().rotation(90).setDuration(1);
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 
     public void takePicture(View view) {
@@ -80,7 +122,10 @@ public class MainActivity extends AppCompatActivity {
         Log.i("timeStamp", timeStamp);
         String imageName = "jpg_"+ timeStamp+"_"; //image name
         Log.i("imageName", imageName);
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        //File storageDir = Environment.getExternalStoragePublicDirectory(
+              //  Environment.DIRECTORY_PICTURES);
         Log.i("storageDir", storageDir.toString());
 
         // new method
@@ -102,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i("Image File: ", imageFile.toString());
         Log.i("Testting!!!!!" , Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES).toString());
+        galleryAddPic(); // add picture that was taken to be available to the gallery app
 
         return imageFile;
     }
@@ -123,47 +169,6 @@ public class MainActivity extends AppCompatActivity {
         photoPickerIntent.setType("image/*");
         startActivityForResult(photoPickerIntent, PICK_IMAGE_REQUEST);
     }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // If the result of camera
-        if(requestCode == IMAGE_REQUEST && resultCode == RESULT_OK){
-
-            //Bundle extras = data.getExtras();
-           // Bitmap bitmap = (Bitmap) extras.get("data");
-           // mImageView.setImageBitmap(bitmap);
-
-            ImageView imageView = findViewById(R.id.imageView);
-            Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
-
-            imageView.setImageBitmap(bitmap);
-            //imageView.animate().rotation(90).setDuration(1);
-
-
-        }
-        // if the result of image picker
-        else if (resultCode == RESULT_OK && requestCode == PICK_IMAGE_REQUEST ) {
-            try
-            {
-                final Uri imageUri = data.getData();
-                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-              //  List<Classifier.Recognition> results = analyse(selectedImage);
-               // TV1.setText(results.get(0).toString());
-               // setPicture(selectedImage);
-
-                ImageView imageView = findViewById(R.id.imageView);
-                //Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
-
-                imageView.setImageBitmap(selectedImage);
-               // imageView.animate().rotation(90).setDuration(1);
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
 
     //----- No need to use viewPicture activity to display image
@@ -176,6 +181,14 @@ public class MainActivity extends AppCompatActivity {
     */
 
 
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(currentImagePath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
+        Log.i("Save to Gallery: ", mediaScanIntent.toString());
+    }
 
 // function to upload the image from camera or from image picker to the server
     public void uploadPicture(View view) {

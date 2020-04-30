@@ -13,13 +13,18 @@
 
     <fragment
         android:id="@+id/navigation_camera"
-        android:name="android.example.com.researchproject.ui.dashboard.CameraFragment"
+        android:name="android.example.com.researchproject.ui.camera.CameraFragment"
         android:label="@string/title_camera"
         tools:layout="@layout/fragment_camera" />
 
     <fragment
         android:id="@+id/navigation_setting"
-        android:name="android.example.com.researchproject.ui.notifications.SettingFragment"
+        android:name="android.example.com.researchproject.ui.setting.SettingFragment"
         android:label="@string/title_setting"
         tools:layout="@layout/fragment_setting" />
+    <fragment
+        android:id="@+id/navigation_map"
+        android:name="android.example.com.researchproject.ui.map.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_map" />
 </navigation>

@@ -1,4 +1,4 @@
-package android.example.com.researchproject.ui.notifications;
+package android.example.com.researchproject.ui.camera;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,25 +11,34 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+//-----
 
 import android.example.com.researchproject.R;
 
-public class SettingFragment extends Fragment {
+public class CameraFragment extends Fragment {
 
-    private SettingNotificationsViewModel settingNotificationsViewModel;
+    private CameraViewModel cameraViewModel;
+
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        settingNotificationsViewModel =
-                ViewModelProviders.of(this).get(SettingNotificationsViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_setting, container, false);
-        final TextView textView = root.findViewById(R.id.text_notifications);
-        settingNotificationsViewModel.getText().observe(this, new Observer<String>() {
+        cameraViewModel =
+                ViewModelProviders.of(this).get(CameraViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_camera, container, false);
+        final TextView textView = root.findViewById(R.id.text_dashboard);
+
+
+        cameraViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
+
             }
         });
         return root;
     }
-}
+
+
+        }
+
