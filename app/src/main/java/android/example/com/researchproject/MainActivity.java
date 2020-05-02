@@ -3,10 +3,13 @@ package android.example.com.researchproject;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.FragmentTransaction;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.example.com.researchproject.ui.camera.CameraFragment;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -19,18 +22,27 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.UploadTask;
 
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,25 +66,27 @@ import static android.example.com.researchproject.util.Constants.ERROR_DIALOG_RE
 import static android.example.com.researchproject.util.Constants.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static android.example.com.researchproject.util.Constants.PERMISSIONS_REQUEST_ENABLE_GPS;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity  {
     private ImageView mImageView;
     private static final int IMAGE_REQUEST = 1; // for camera intent
     private static final int PICK_IMAGE_REQUEST = 2; // for select picture from gallery
     String currentImagePath = null;
     private static final String TAG = "MainActivity";
 
-    LocationManager locationManager;
-    LocationListener locationListener;
-    private GoogleMap mMap;
 
-    // map
-
-    private boolean mLocationPermissionGranted = false;
+    // Firebase
+    StorageReference mStorageRef;
+    public Uri imgUri;
+    private StorageTask uploadTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mStorageRef = FirebaseStorage.getInstance().getReference("Images");
+
+        if(savedInstanceState == null){
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -82,8 +96,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
-
+        Toast.makeText(this , "Saved Last Instance is null", Toast.LENGTH_LONG).show();
+        }
+        else {
+            Toast.makeText(this , "Saved Last Instance is non null", Toast.LENGTH_LONG).show();
+        };
     }
+//
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        Toast.makeText(getApplicationContext(), "Main onStop called", Toast.LENGTH_LONG).show();
+//
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        Toast.makeText(getApplicationContext(), "Main onResume called", Toast.LENGTH_LONG).show();
+//
+//
+//    }
+//
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        Toast.makeText(getApplicationContext(), "Main onPause called", Toast.LENGTH_LONG).show();
+//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -91,26 +130,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // If the result of camera
         if(requestCode == IMAGE_REQUEST && resultCode == RESULT_OK){
+            // data.getData() is null
 
-            //Bundle extras = data.getExtras();
-            // Bitmap bitmap = (Bitmap) extras.get("data");
-            // mImageView.setImageBitmap(bitmap);
+    //Toast.makeText(MainActivity.this,data.getData().toString(),Toast.LENGTH_LONG).show();
+         //   Log.i("data.getData(): ", data.getData().toString());
 
             ImageView imageView = findViewById(R.id.imageView);
-            Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
 
-            imageView.setImageBitmap(bitmap);
+            imageView.setImageURI(Uri.fromFile(new File(currentImagePath)));
+           // Bitmap bitmap = BitmapFactory.decodeFile(currentImagePath);
+            //imageView.setImageBitmap(bitmap);
+
             //imageView.animate().rotation(90).setDuration(1);
             //   galleryAddPic(); // add picture that was taken to be available to the gallery app
 
 
         }
         // if the result of image picker
-        else if (resultCode == RESULT_OK && requestCode == PICK_IMAGE_REQUEST ) {
+        else if (resultCode == RESULT_OK && requestCode == PICK_IMAGE_REQUEST && data!=null && data.getData()!=null ) {
             try
             {
-                final Uri imageUri = data.getData();
-                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                imgUri = data.getData();
+                final InputStream imageStream = getContentResolver().openInputStream(imgUri);
                 final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                 //  List<Classifier.Recognition> results = analyse(selectedImage);
                 // TV1.setText(results.get(0).toString());
@@ -122,10 +163,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 imageView.setImageBitmap(selectedImage);
                 // imageView.animate().rotation(90).setDuration(1);
 
+                // or
+//                imgUri = data.getData();
+//            imageView.setImageURI(imgUri);
+
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
         }
+//        else if(requestCode == PICK_IMAGE_REQUEST && resultCode ==  RESULT_OK && data != null && data.getData() != null){
+//
+//        }
+//
     }
 
 
@@ -199,11 +248,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     */
 
 
-    public void selectPicture(View view) {
-        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-        photoPickerIntent.setType("image/*");
-        startActivityForResult(photoPickerIntent, PICK_IMAGE_REQUEST);
-    }
+
 
 
     //----- No need to use viewPicture activity to display image
@@ -225,154 +270,53 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.i("Save to Gallery: ", mediaScanIntent.toString());
     }
 
+    // Browse Images from gallery
+    public void selectPicture(View view) {
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, PICK_IMAGE_REQUEST);
+    }
+
 // function to upload the image from camera or from image picker to the server
     public void uploadPicture(View view) {
         Log.i("uploadImage button: ", "Clicked");
-    }
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        //MapsInitializer.initialize(getContext());
-        googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        Log.i("Location Manager: ", locationManager.toString());
-
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Log.i("Location", location.toString());
-                mMap.clear();
-
-                LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                Log.i("userLocation", location.toString());
-                mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
-            }
-
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-
-            }
-        };
-        if(Build.VERSION.SDK_INT < 23){
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-
-            }else{
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,locationListener);
-
-            }
+        if(uploadTask!=null && uploadTask.isInProgress()){
+            Toast.makeText(MainActivity.this, "Upload is in progress", Toast.LENGTH_LONG).show();
+        }else {
+            FileUploader();
         }
-
     }
 
 
-    // MaP
+    private void FileUploader(){
 
-//
-//
-//    private boolean checkMapServices(){
-//        if(isServicesOK()){
-//            if(isMapsEnabled()){
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//
-//    public boolean isMapsEnabled(){
-//        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
-//
-//        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
-//            buildAlertMessageNoGps();
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//
-//
-//    private void getLocationPermission() {
-//        /*
-//         * Request location permission, so that we can get the location of the
-//         * device. The result of the permission request is handled by a callback,
-//         * onRequestPermissionsResult.
-//         */
-//        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-//                android.Manifest.permission.ACCESS_FINE_LOCATION)
-//                == PackageManager.PERMISSION_GRANTED) {
-//            mLocationPermissionGranted = true;
-//           // getChatrooms();
-//        } else {
-//            ActivityCompat.requestPermissions(this,
-//                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-//                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-//        }
-//    }
-//
-//    public boolean isServicesOK(){
-//        Log.d(TAG, "isServicesOK: checking google services version");
-//
-//        int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(MainActivity.this);
-//
-//        if(available == ConnectionResult.SUCCESS){
-//            //everything is fine and the user can make map requests
-//            Log.d(TAG, "isServicesOK: Google Play Services is working");
-//            return true;
-//        }
-//        else if(GoogleApiAvailability.getInstance().isUserResolvableError(available)){
-//            //an error occured but we can resolve it
-//            Log.d(TAG, "isServicesOK: an error occured but we can fix it");
-//            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(MainActivity.this, available, ERROR_DIALOG_REQUEST);
-//            dialog.show();
-//        }else{
-//            Toast.makeText(this, "You can't make map requests", Toast.LENGTH_SHORT).show();
-//        }
-//        return false;
-//    }
-//
-//
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           @NonNull String permissions[],
-//                                           @NonNull int[] grantResults) {
-//        mLocationPermissionGranted = false;
-//        switch (requestCode) {
-//            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    mLocationPermissionGranted = true;
-//                }
-//            }
-//        }
-//    }
-//
-//    private void buildAlertMessageNoGps() {
-//        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
-//                .setCancelable(false)
-//                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-//                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-//                        Intent enableGpsIntent = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//                        startActivityForResult(enableGpsIntent, PERMISSIONS_REQUEST_ENABLE_GPS);
-//                    }
-//                });
-//        final AlertDialog alert = builder.create();
-//        alert.show();
-//    }
+        StorageReference Ref = mStorageRef.child(System.currentTimeMillis()+ "."+ getExtension(imgUri));
+        Log.i("getExtension: ", getExtension(imgUri).toString());
 
+        uploadTask = Ref.putFile(imgUri)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // Get a URL to the uploaded content
+                        // Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Toast.makeText(MainActivity.this,"Image Uploaded success",Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        // ...
+                    }
+                });
+    }
+
+
+
+    private String getExtension(Uri uri){
+        ContentResolver ContentResolv = getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(ContentResolv.getType(uri));
+    }
 }
