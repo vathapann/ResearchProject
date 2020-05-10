@@ -26,6 +26,8 @@ import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.UploadTask;
 
@@ -101,6 +103,23 @@ public class MainActivity extends AppCompatActivity  {
         else {
             Toast.makeText(this , "Saved Last Instance is non null", Toast.LENGTH_LONG).show();
         };
+    checkCurrentUser();
+
+    }
+
+    public void checkCurrentUser() {
+        // [START check_current_user]
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // User is signed in
+            Toast.makeText(MainActivity.this, "User is signed in", Toast.LENGTH_LONG).show();
+        } else {
+            // No user is signed in
+            Toast.makeText(MainActivity.this, "No user is signed in", Toast.LENGTH_LONG).show();
+            Intent FirebaseUIActivity = new Intent(MainActivity.this, android.example.com.researchproject.FirebaseUIActivity.class);
+            startActivity(FirebaseUIActivity);
+        }
+        // [END check_current_user]
     }
 //
 //    @Override
